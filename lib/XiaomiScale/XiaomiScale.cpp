@@ -1,0 +1,2 @@
+#include "XiaomiScale.h"
+
