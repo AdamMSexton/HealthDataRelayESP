@@ -1,6 +1,28 @@
 #include "BleScanner.h"
+#include "BleSubscription.h"
 
 BleScanner* BleScanner::currentScanner = nullptr;
+BleSubscription subscriptions[8];
+uint8_t subscriptionCount = 0;
+
+bool Subscribe(const BleUuid& serviceUuid, BleTrafficHandler* handler)
+{
+  if (subscriptionCount >= 8)
+  {
+    return false;
+  }
+
+  if (handler == nullptr)
+  {
+    return false;
+  }
+
+  subscriptions[subscriptionCount].handler = handler;
+  subscriptions[subscriptionCount].serviceUuid = serviceUuid;
+  subscriptionCount++;
+
+  return true;
+}
 
 int BleScanner::onBleEvent(struct ble_gap_event* event, void* arg)
 {
