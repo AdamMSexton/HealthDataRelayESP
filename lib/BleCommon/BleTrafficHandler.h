@@ -1,6 +1,8 @@
+#pragma once
 #include "BleAdvertisement.h"
 
 class BleTrafficHandler
 {
-    virtual void IngestTraffic(const BleAdvertisement& advertisement) = 0;
+    public:
+        virtual void IngestTraffic(const BleAdvertisement& advertisement) = 0;
 };

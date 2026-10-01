@@ -15,10 +15,14 @@
 #include "services/gap/ble_svc_gap.h"
 #include "services/gatt/ble_svc_gatt.h"
 
+#include "BleUuid.h"
+#include "BleTrafficHandler.h"
+
 class BleScanner
 {
     public:
         void initalizeScanner();
+        bool subscribe(const BleUuid& serviceUuid, BleTrafficHandler* handler);
         
     private:
         static BleScanner* currentScanner;

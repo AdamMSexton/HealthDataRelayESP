@@ -1,3 +1,4 @@
+#pragma once
 #include "BleTrafficHandler.h"
 #include "BleUuid.h"
 

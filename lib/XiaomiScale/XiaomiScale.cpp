@@ -1,11 +1,12 @@
 #include "XiaomiScale.h"
 #include "BleTrafficHandler.h"
 
-class XiaomiScale : public BleTrafficHandler
+
+void XiaomiScale::IngestTraffic(const BleAdvertisement& advertisement)
 {
-public:
-    void XiaomiScale::IngestTraffic(const BleAdvertisement& advertisement) override
-    {
-        // Xiaomi knows what to do.
-    }
-};
+
+    printf("Msg: %02X %d %02X\n",
+        advertisement.address[0],
+        static_cast<int>(advertisement.serviceUuid.size),
+        advertisement.serviceUuid.value[0]);
+}
