@@ -1,9 +1,9 @@
 #pragma once
-#include "BleTrafficHandler.h"
+#include "BleAdvertisementHandler.h"
 #include <stdio.h>
 
-class XiaomiScale : public BleTrafficHandler
+class XiaomiScale : public BleAdvertisementHandler
 {
-    void IngestTraffic(const BleAdvertisement& advertisement) override;
+    void ProcessAdvertisement(const BleAdvertisement& advertisement) override;
 
 };

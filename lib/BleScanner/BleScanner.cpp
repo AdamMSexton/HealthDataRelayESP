@@ -6,7 +6,7 @@ BleScanner* BleScanner::currentScanner = nullptr;
 BleSubscription subscriptions[8];
 uint8_t subscriptionCount = 0;
 
-bool BleScanner::subscribe(const BleUuid& serviceUuid, BleTrafficHandler* handler)
+bool BleScanner::subscribe(const BleUuid& serviceUuid, BleAdvertisementHandler* handler)
 {
   if (subscriptionCount >= 8)
   {
@@ -35,15 +35,22 @@ int BleScanner::onBleEvent(struct ble_gap_event* event, void* arg)
 
         for(int i = 0; i < fields.num_uuids16; i++)
         {
-            BleUuid temp(fields.uuids16[i].value);
+            BleUuid thisUuid(fields.uuids16[i].value);
             
             for (int j = 0; j < subscriptionCount; j++)
             {
-                if (temp == subscriptions[j].serviceUuid)
+                if (thisUuid == subscriptions[j].serviceUuid)
                 {
                     // Create advertisement
                     BleAdvertisement newAdvertisement;
-                    subscriptions[j].handler->IngestTraffic(newAdvertisement);
+                    newAdvertisement.serviceUuid = thisUuid;
+                    newAdvertisement.rssi = event->disc.rssi;
+                    for (int j = 0; j < 6; j++)
+                    {
+                        newAdvertisement.address[j] = event->disc.addr.val[j];
+                    }
+
+                    subscriptions[j].handler->ProcessAdvertisement(newAdvertisement);
                 }
             }
         }

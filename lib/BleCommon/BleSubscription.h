@@ -6,6 +6,6 @@
 struct BleSubscription
 {
     BleUuid serviceUuid;
-    BleTrafficHandler* handler;
+    BleAdvertisementHandler* handler;
 
 };

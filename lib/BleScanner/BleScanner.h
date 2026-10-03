@@ -16,13 +16,13 @@
 #include "services/gatt/ble_svc_gatt.h"
 
 #include "BleUuid.h"
-#include "BleTrafficHandler.h"
+#include "BleAdvertisementHandler.h"
 
 class BleScanner
 {
     public:
         void initalizeScanner();
-        bool subscribe(const BleUuid& serviceUuid, BleTrafficHandler* handler);
+        bool subscribe(const BleUuid& serviceUuid, BleAdvertisementHandler* handler);
         
     private:
         static BleScanner* currentScanner;

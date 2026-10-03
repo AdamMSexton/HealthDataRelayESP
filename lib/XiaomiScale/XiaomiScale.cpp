@@ -2,7 +2,7 @@
 #include "BleTrafficHandler.h"
 
 
-void XiaomiScale::IngestTraffic(const BleAdvertisement& advertisement)
+void XiaomiScale::ProcessAdvertisement(const BleAdvertisement& advertisement)
 {
     printf("BLE | MAC %02X:%02X:%02X:%02X:%02X:%02X | RSSI %d | UUID 0x%02X%02X | Data[%u]: ",
         advertisement.address[5],
