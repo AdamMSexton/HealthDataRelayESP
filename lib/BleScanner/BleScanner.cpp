@@ -35,7 +35,8 @@ int BleScanner::onBleEvent(struct ble_gap_event* event, void* arg)
 
         for(int i = 0; i < fields.num_uuids16; i++)
         {
-            BleUuid thisUuid(fields.uuids16[i].value);
+            uint16_t uuid = fields.svc_data_uuid16[0] | (fields.svc_data_uuid16[1] << 8);
+            BleUuid thisUuid(uuid);
             
             for (int j = 0; j < subscriptionCount; j++)
             {
@@ -48,6 +49,15 @@ int BleScanner::onBleEvent(struct ble_gap_event* event, void* arg)
                     for (int j = 0; j < 6; j++)
                     {
                         newAdvertisement.address[j] = event->disc.addr.val[j];
+                    }
+
+                    if (fields.svc_data_uuid16 != nullptr && fields.svc_data_uuid16_len >= 2)
+                    {
+                        newAdvertisement.serviceData =
+                            fields.svc_data_uuid16;
+
+                        newAdvertisement.serviceDataLength =
+                            fields.svc_data_uuid16_len;
                     }
 
                     subscriptions[j].handler->ProcessAdvertisement(newAdvertisement);

@@ -1,5 +1,5 @@
 #include "XiaomiScale.h"
-#include "BleTrafficHandler.h"
+#include "BleAdvertisementHandler.h"
 
 
 void XiaomiScale::ProcessAdvertisement(const BleAdvertisement& advertisement)
