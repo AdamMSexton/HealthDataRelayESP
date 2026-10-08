@@ -4,6 +4,10 @@
 
 class XiaomiScale : public BleAdvertisementHandler
 {
-    void ProcessAdvertisement(const BleAdvertisement& advertisement) override;
+    private:
+        static uint16_t lastMeasurement[7];
+
+    public:
+        void ProcessAdvertisement(const BleAdvertisement& advertisement) override;
 
 };

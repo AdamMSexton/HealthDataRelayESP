@@ -33,7 +33,7 @@ int BleScanner::onBleEvent(struct ble_gap_event* event, void* arg)
         struct ble_hs_adv_fields fields;
         ble_hs_adv_parse_fields(&fields,event->disc.data,event->disc.length_data);
 
-        for(int i = 0; i < fields.num_uuids16; i++)
+        if ((fields.svc_data_uuid16 != nullptr) && (fields.svc_data_uuid16_len >= 2))
         {
             uint16_t uuid = fields.svc_data_uuid16[0] | (fields.svc_data_uuid16[1] << 8);
             BleUuid thisUuid(uuid);
