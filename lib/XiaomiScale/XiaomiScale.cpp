@@ -1,5 +1,7 @@
 #include "XiaomiScale.h"
 #include "BleAdvertisementHandler.h"
+#include <cstring>
+#include <string.h>
 
 
 // Xiaomi Mi Body Composition Scale 2 (XMTZC05HM) - 0x181B payload
@@ -31,12 +33,20 @@
 //   A4 -> accept weight, impedance = null
 //   A6 -> accept weight + impedance
 
+// Hold last valid timestamp
+uint8_t XiaomiScale::lastMeasurementTimeStamp[7] = {};
 
 void XiaomiScale::ProcessAdvertisement(const BleAdvertisement& advertisement)
 {
+    // CHeck advertisement payuload service data for flags indicating a new measurement
     if ((advertisement.serviceData[2] == 0x02) && ((advertisement.serviceData[3] == 0xA4)||(advertisement.serviceData[3] == 0xA6)))
     {
-        
+        // Check timestamp for new
+        if (memcmp(lastMeasurementTimeStamp, &advertisement.serviceData[2],7) != 0)
+        {
+            memcpy(lastMeasurementTimeStamp, &advertisement.serviceData[2],7);
+            printf("**NEW**");
+        }
         printf("BLE | MAC %02X:%02X:%02X:%02X:%02X:%02X | RSSI %d | UUID 0x%02X%02X | Data[%u]: ",
             advertisement.address[5],
             advertisement.address[4],
