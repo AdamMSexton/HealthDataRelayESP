@@ -1,9 +1,13 @@
 #pragma once
 
+#include "OutboundMessage.h"
+
 class MessageCenter
 {
-    public:
-
     private:
+    
+    
+    public:
+        void EnqueueMessage(OutboundMessage newMessage);
 
 };
