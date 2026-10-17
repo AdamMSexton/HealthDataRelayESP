@@ -5,6 +5,8 @@
 #include "WeightMeasurement.h"
 #include "OutboundMessage.h"
 
+extern MessageCenter messageCenter;
+
 class OutboundWeightProcessor
 {
     private:
@@ -14,6 +16,7 @@ class OutboundWeightProcessor
         std::string CreateMeasurementId(WeightMeasurement measurement);
 
     public:
-        OutboundMessage CreateMessage(WeightMeasurement newMeasurement);
+        
+        OutboundMessage CreateOutboundMessage(WeightMeasurement newMeasurement);
         OutboundMessage MessageFromJournal(std::string journalEntry);
 };

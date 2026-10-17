@@ -10,11 +10,14 @@
 #include "services/gatt/ble_svc_gatt.h"
 
 #include "XiaomiScale.h"
+#include "MessageCenter.h"
 
 // Create scale
 XiaomiScale scale;
 // Create BT Scanner object
 BleScanner scanner;
+// Create Message center
+MessageCenter messageCenter;
 
 
 extern "C" int app_main()
