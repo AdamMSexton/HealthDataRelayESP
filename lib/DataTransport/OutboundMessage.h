@@ -7,7 +7,7 @@
 
 struct OutboundMessage
 {
-    std::string measurementId;
+    uint64_t measurementId;
     cJSON* jsonPayload;
     std::string journalEntry;
     std::string endpoint;               // Include initial slash, i.e. "/weight"

@@ -5,16 +5,14 @@
 #include "WeightMeasurement.h"
 #include "OutboundMessage.h"
 
-extern MessageCenter messageCenter;
-
 class OutboundWeightProcessor
 {
     private:
         WeightMeasurement ConvertFromJournal(std::string journalEntry);
-        std::string ConvertToJournal(WeightMeasurement measurement, std::string measurementId);
-        std::string SerializeToJson(WeightMeasurement measurement);
-        std::string CreateMeasurementId(WeightMeasurement measurement);
-
+        std::string ConvertToJournal(WeightMeasurement measurement, uint64_t measurementId);
+        cJSON* SerializeToJson(WeightMeasurement measurement, uint64_t measurementId);
+        uint64_t CreateMeasurementId(WeightMeasurement measurement);
+        uint64_t fnv1a64(const std::string& input);
     public:
         
         OutboundMessage CreateOutboundMessage(WeightMeasurement newMeasurement);
