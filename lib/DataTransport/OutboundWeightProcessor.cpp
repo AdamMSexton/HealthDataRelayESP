@@ -61,15 +61,15 @@ uint64_t OutboundWeightProcessor::CreateMeasurementId(WeightMeasurement measurem
     return fnv1a64(rawSerial);
 }
 
-OutboundMessage OutboundWeightProcessor::CreateOutboundMessage(WeightMeasurement newMeasurement)
+void OutboundWeightProcessor::SendOutboundMessage(WeightMeasurement newMeasurement)
 {
     uint64_t measurementId = CreateMeasurementId(newMeasurement);
     std::string journalEntry = ConvertToJournal(newMeasurement,measurementId);
     cJSON* jsonPayload = SerializeToJson(newMeasurement,measurementId);
     
-    OutboundMessage finalMessage = {measurementId, jsonPayload, journalEntry, "/weight"};
+    OutboundMessage* finalMessage = new OutboundMessage{measurementId, jsonPayload, journalEntry, "/weight"};
 
-    return finalMessage;
+    messageCenter.EnqueueMessage(finalMessage);
 }
 
 OutboundMessage OutboundWeightProcessor::MessageFromJournal(std::string journalEntry)

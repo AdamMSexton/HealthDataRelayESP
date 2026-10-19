@@ -105,8 +105,7 @@ void XiaomiScale::ProcessAdvertisement(const BleAdvertisement& advertisement)
                 timestamp.tm_sec  = advertisement.serviceData[10];
                 measurement.measurementTimeUTC = static_cast<uint64_t>(mktime(&timestamp));
                 
-                OutboundMessage outboundPayload = outboundWeightProcessor.CreateOutboundMessage(measurement);
-                messageCenter.EnqueueMessage(outboundPayload);
+                outboundWeightProcessor.SendOutboundMessage(measurement);
             }
             else
             {

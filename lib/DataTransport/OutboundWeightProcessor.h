@@ -4,6 +4,9 @@
 
 #include "WeightMeasurement.h"
 #include "OutboundMessage.h"
+#include "MessageCenter.h"
+
+extern MessageCenter messageCenter;
 
 class OutboundWeightProcessor
 {
@@ -15,6 +18,6 @@ class OutboundWeightProcessor
         uint64_t fnv1a64(const std::string& input);
     public:
         
-        OutboundMessage CreateOutboundMessage(WeightMeasurement newMeasurement);
+        void SendOutboundMessage(WeightMeasurement newMeasurement);
         OutboundMessage MessageFromJournal(std::string journalEntry);
 };

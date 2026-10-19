@@ -3,8 +3,6 @@
 #include <stdio.h>
 #include "MessageCenter.h"
 
-extern MessageCenter messageCenter;
-
 class XiaomiScale : public BleAdvertisementHandler
 {
     private:
