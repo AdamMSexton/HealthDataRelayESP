@@ -11,6 +11,8 @@
 
 #include "XiaomiScale.h"
 #include "MessageCenter.h"
+#include "HttpTransport.h"
+
 
 // Create scale
 XiaomiScale scale;
@@ -18,11 +20,15 @@ XiaomiScale scale;
 BleScanner scanner;
 // Create Message center
 MessageCenter messageCenter;
+// Create HTTP Transport Handler
+HttpTransport httpTransport;
 
 
 extern "C" int app_main()
 {
     printf("HealthDataCollector ESP32 starting...\n");
+
+    messageCenter.Init();                           // Initalize message queue and create worker.
 
     BleUuid scaleServiceUuid;                       // Hardcode scale Uuid for now
     scaleServiceUuid.size = BleUuidSize::Uuid16;

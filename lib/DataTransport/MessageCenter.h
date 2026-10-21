@@ -1,12 +1,14 @@
 #pragma once
 
 #include <queue>
-
-#include "OutboundMessage.h"
-#include "MessageCenter.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 
+#include "OutboundMessage.h"
+#include "MessageCenter.h"
+#include "HttpTransport.h"
+
+extern HttpTransport httpTransport;
 
 struct MessageTicket
 {
@@ -22,8 +24,10 @@ class MessageCenter
         std::queue<MessageTicket*> messageQueue;
         SemaphoreHandle_t queueMutex = nullptr;
         SemaphoreHandle_t messageAvailable = nullptr;    
-    
+        void Worker();
+        static void WorkerTask(void* parameter);
+
     public:
         void EnqueueMessage(OutboundMessage* newMessage);
-
+        bool Init();
 };
