@@ -48,35 +48,35 @@ OutboundWeightProcessor outboundWeightProcessor;
 
 void XiaomiScale::ProcessAdvertisement(const BleAdvertisement& advertisement)
 {
-    // CHeck advertisement payuload service data for flags indicating a new measurement
+    // Check advertisement payuload service data for flags indicating a new measurement
     if ((advertisement.serviceData[2] == 0x02) && ((advertisement.serviceData[3] == 0xA4)||(advertisement.serviceData[3] == 0xA6)))
     {
         // Check timestamp for new
         if (memcmp(lastMeasurementTimeStamp, &advertisement.serviceData[3],7) != 0)
         {
             memcpy(lastMeasurementTimeStamp, &advertisement.serviceData[3],7);
-            printf("**NEW**");
+
+            // printf("**NEW**");
         
-            printf("BLE | MAC %02X:%02X:%02X:%02X:%02X:%02X | RSSI %d | UUID 0x%02X%02X | Data[%u]: ",
-                advertisement.address[5],
-                advertisement.address[4],
-                advertisement.address[3],
-                advertisement.address[2],
-                advertisement.address[1],
-                advertisement.address[0],
-                advertisement.rssi,
-                advertisement.serviceUuid.value[1],
-                advertisement.serviceUuid.value[0],
-                advertisement.serviceDataLength);
-                
+            // printf("BLE | MAC %02X:%02X:%02X:%02X:%02X:%02X | RSSI %d | UUID 0x%02X%02X | Data[%u]: ",
+            //     advertisement.address[5],
+            //     advertisement.address[4],
+            //     advertisement.address[3],
+            //     advertisement.address[2],
+            //     advertisement.address[1],
+            //     advertisement.address[0],
+            //     advertisement.rssi,
+            //     advertisement.serviceUuid.value[1],
+            //     advertisement.serviceUuid.value[0],
+            //     advertisement.serviceDataLength);
                 
             if (advertisement.serviceData != nullptr)
             {
-                for (uint16_t i = 0; i < advertisement.serviceDataLength; i++)
-                {
-                    printf("%02X ", advertisement.serviceData[i]);
-                }
-                printf("\n");
+                // for (uint16_t i = 0; i < advertisement.serviceDataLength; i++)
+                // {
+                //     printf("%02X ", advertisement.serviceData[i]);
+                // }
+                // printf("\n");
 
                 // Create WeightMeasurement
                 WeightMeasurement measurement;
@@ -114,7 +114,7 @@ void XiaomiScale::ProcessAdvertisement(const BleAdvertisement& advertisement)
         }
         else
         {
-            printf("D");
+            //printf("D");
         }
     }
 }

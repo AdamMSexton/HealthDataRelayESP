@@ -7,7 +7,7 @@ bool MessageCenter::Init()
     queueMutex = xSemaphoreCreateMutex();
     messageAvailable = xSemaphoreCreateBinary();
 
-    BaseType_t result = xTaskCreate(MessageCenter::WorkerTask, "MessageWorker", 2048, this, 5, nullptr);
+    BaseType_t result = xTaskCreate(MessageCenter::WorkerTask, "MessageWorker", 4096, this, 5, nullptr);
     if (result != pdPASS)
     {
         printf("Failed to create MessageWorker task\n");
@@ -108,12 +108,18 @@ void MessageCenter::Worker()
         // Dequeue and process messages
         if (xSemaphoreTake(queueMutex, portMAX_DELAY)== pdTRUE)     // Hold for Mutex
         {
-            ticketToSend = messageQueue.front();     // Get next ticket
-            messageQueue.pop();                                     // Remove ticket
+            if (!messageQueue.empty())
+            {
+                ticketToSend = messageQueue.front();     // Get next ticket
+                messageQueue.pop();                                     // Remove ticket
+            }
+
             xSemaphoreGive(queueMutex);                             // Release Mutex
         }
 
-        
+        if (ticketToSend == nullptr)
+            continue;
+
         // Set time Stamps, update counter
         ticketToSend->timeLastTry = static_cast<int64_t>(time(nullptr));
         cJSON_SetValuestring(cJSON_GetObjectItem(ticketToSend->payloadPtr->jsonPayload,"TransmittedAt"),t64bToIso8601(ticketToSend->timeLastTry).c_str());
