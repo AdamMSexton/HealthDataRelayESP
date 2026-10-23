@@ -1,5 +1,5 @@
 #include "MessageCenter.h"
-#include "TimeTools.h"
+#include "TimeManager.h"
 
 
 bool MessageCenter::Init()
@@ -122,7 +122,7 @@ void MessageCenter::Worker()
 
         // Set time Stamps, update counter
         ticketToSend->timeLastTry = static_cast<int64_t>(time(nullptr));
-        cJSON_SetValuestring(cJSON_GetObjectItem(ticketToSend->payloadPtr->jsonPayload,"TransmittedAt"),t64bToIso8601(ticketToSend->timeLastTry).c_str());
+        cJSON_SetValuestring(cJSON_GetObjectItem(ticketToSend->payloadPtr->jsonPayload,"TransmittedAt"),TimeManager::t64bToIso8601(ticketToSend->timeLastTry).c_str());
         ticketToSend->transmitAttempts++;
 
         httpTransport.Send(ticketToSend->payloadPtr);

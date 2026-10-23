@@ -6,7 +6,7 @@
 #include "OutboundWeightProcessor.h"
 #include "MeasurementType.h"
 #include "MessageCenter.h"
-#include "TimeTools.h"
+#include "TimeManager.h"
 
 
 uint64_t OutboundWeightProcessor::fnv1a64(const std::string& input)
@@ -41,7 +41,7 @@ cJSON* OutboundWeightProcessor::SerializeToJson(WeightMeasurement measurement, u
     cJSON* message = cJSON_CreateObject();
     cJSON_AddStringToObject(message, "MeasurementId", std::to_string(measurementId).c_str());
     cJSON_AddStringToObject(message, "TransmittedAt", "Null");
-    cJSON_AddStringToObject(message, "MeasuredAt", t64bToIso8601(measurement.measurementTimeUTC).c_str());
+    cJSON_AddStringToObject(message, "MeasuredAt", TimeManager::t64bToIso8601(measurement.measurementTimeUTC).c_str());
     cJSON_AddNumberToObject(message, "WeightKg", measurement.weightInKg);
     cJSON_AddNumberToObject(message, "ImpedanceOhm", measurement.impedanceOhms);
     cJSON_AddNumberToObject(message, "UserId", 0);          // Placeholder, users not implemented yet

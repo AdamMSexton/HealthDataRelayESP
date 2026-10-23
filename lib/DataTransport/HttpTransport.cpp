@@ -15,6 +15,8 @@ bool HttpTransport::Send(OutboundMessage* message)
         printf("JSON Payload:   %s\n", json ? json : "(null)");
         printf("Journal Entry:  %s\n", newMessage->journalEntry.c_str());
         printf("Endpoint:       %s\n", newMessage->endpoint.c_str());
+
+        printf("NTP synchronized: %s\n", timeManager.IsTimeSynchronized() ? "YES" : "NO");
     }
 
     return true;

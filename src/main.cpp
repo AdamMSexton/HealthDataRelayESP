@@ -14,6 +14,7 @@
 #include "MessageCenter.h"
 #include "HttpTransport.h"
 #include "WiFiManager.h"
+#include "TimeManager.h"
 
 // Create BT Scanner object
 BleScanner scanner;
@@ -23,6 +24,8 @@ WiFiManager wifiManager;
 MessageCenter messageCenter;
 // Create HTTP Transport Handler
 HttpTransport httpTransport;
+// Create TimeManager
+TimeManager timeManager;
 
 // Create scale
 XiaomiScale scale;
