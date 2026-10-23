@@ -4,6 +4,7 @@
 #include "esp_event.h"
 #include "esp_netif.h"
 #include "nvs_flash.h"
+#include "esp_netif_sntp.h"
 
 class WiFiManager
 {

@@ -92,6 +92,24 @@ bool WiFiManager::Init()
         return false;
     }
 
+    // Configure SNTP for DHCP with pool.ntp.org fallback
+    esp_sntp_config_t sntpConfig =
+    ESP_NETIF_SNTP_DEFAULT_CONFIG("pool.ntp.org");
+
+    sntpConfig.server_from_dhcp = true;
+    sntpConfig.renew_servers_after_new_IP = true;
+    sntpConfig.index_of_first_server = 1;
+
+    result = esp_netif_sntp_init(&sntpConfig);
+
+    if (result != ESP_OK)
+    {
+        printf("SNTP initialization failed: %s\n",
+            esp_err_to_name(result));
+        return false;
+    }
+
+
     // Start WiFi driver
     result = esp_wifi_start();
     if (result != ESP_OK)
