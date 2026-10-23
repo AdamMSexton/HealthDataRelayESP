@@ -4,6 +4,7 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "nvs_flash.h"
 
 #include "host/util/util.h"
 #include "services/gap/ble_svc_gap.h"
@@ -12,21 +13,34 @@
 #include "XiaomiScale.h"
 #include "MessageCenter.h"
 #include "HttpTransport.h"
+#include "WiFiManager.h"
 
-
-// Create scale
-XiaomiScale scale;
 // Create BT Scanner object
 BleScanner scanner;
+// Create WiFi controller
+WiFiManager wifiManager;
 // Create Message center
 MessageCenter messageCenter;
 // Create HTTP Transport Handler
 HttpTransport httpTransport;
 
+// Create scale
+XiaomiScale scale;
 
 extern "C" int app_main()
 {
     printf("HealthDataCollector ESP32 starting...\n");
+
+    // Initalize Non-Volitile Storage, mainly for WiFi Credentials
+    esp_err_t result = nvs_flash_init();
+
+    if (result != ESP_OK)
+    {
+        printf("NVS initialization failed: %s\n", esp_err_to_name(result));
+        return false;
+    }
+
+    wifiManager.Init();
 
     messageCenter.Init();                           // Initalize message queue and create worker.
 
