@@ -18,14 +18,14 @@
 #include "BleUuid.h"
 #include "BleAdvertisementHandler.h"
 
-class BleScanner
+class BleManager
 {
     public:
         void initalizeScanner();
         bool subscribe(const BleUuid& serviceUuid, BleAdvertisementHandler* handler);
         
     private:
-        static BleScanner* currentScanner;
+        static BleManager* currentScanner;
         static int onBleEvent(struct ble_gap_event* event, void* arg);
         void startScan();
         static void onSync();

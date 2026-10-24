@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "BleScanner.h"
+#include "BleManager.h"
 #include "BleUuid.h"
 
 #include "freertos/FreeRTOS.h"
@@ -17,7 +17,7 @@
 #include "TimeManager.h"
 
 // Create BT Scanner object
-BleScanner scanner;
+BleManager scanner;
 // Create WiFi controller
 WiFiManager wifiManager;
 // Create Message center

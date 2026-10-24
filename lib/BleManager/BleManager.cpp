@@ -1,12 +1,12 @@
-#include "BleScanner.h"
+#include "BleManager.h"
 #include "BleSubscription.h"
 #include "BleAdvertisement.h"
 
-BleScanner* BleScanner::currentScanner = nullptr;
+BleManager* BleManager::currentScanner = nullptr;
 BleSubscription subscriptions[8];
 uint8_t subscriptionCount = 0;
 
-bool BleScanner::subscribe(const BleUuid& serviceUuid, BleAdvertisementHandler* handler)
+bool BleManager::subscribe(const BleUuid& serviceUuid, BleAdvertisementHandler* handler)
 {
   if (subscriptionCount >= 8)
   {
@@ -25,7 +25,7 @@ bool BleScanner::subscribe(const BleUuid& serviceUuid, BleAdvertisementHandler* 
   return true;
 }
 
-int BleScanner::onBleEvent(struct ble_gap_event* event, void* arg)
+int BleManager::onBleEvent(struct ble_gap_event* event, void* arg)
 {
     if (event->type == BLE_GAP_EVENT_DISC)
     {
@@ -70,7 +70,7 @@ int BleScanner::onBleEvent(struct ble_gap_event* event, void* arg)
     return 0;
 }
 
-void BleScanner::startScan()
+void BleManager::startScan()
 {
     struct ble_gap_disc_params params = {};
 
@@ -89,18 +89,18 @@ void BleScanner::startScan()
     printf("BLE scan started. rc=%d\n", rc);
 }
 
-void BleScanner::nimbleTask(void* param)
+void BleManager::nimbleTask(void* param)
 {
     nimble_port_run();
     nimble_port_freertos_deinit();
 }
 
-void BleScanner::onSync()
+void BleManager::onSync()
 {
     currentScanner->startScan();
 }
 
-void BleScanner::initalizeScanner()
+void BleManager::initalizeScanner()
 {
     currentScanner = this;
     
