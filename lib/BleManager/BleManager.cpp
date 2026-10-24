@@ -67,6 +67,30 @@ int BleManager::onBleEvent(struct ble_gap_event* event, void* arg)
             }
         }
     }
+    else if (event->type == BLE_GAP_EVENT_CONNECT)
+    {
+        if (event->connect.status == 0)
+        {
+            printf("BLE connected successfully. Handle: %d\n",event->connect.conn_handle);
+
+            // For testing, immediately disconnect.
+            ble_gap_terminate(event->connect.conn_handle,BLE_ERR_REM_USER_CONN_TERM);
+        }
+        else
+        {
+            printf("BLE connection failed. Status: %d\n",event->connect.status);
+            currentScanner->startScan();
+        }
+    }
+    else if (event->type == BLE_GAP_EVENT_DISCONNECT)
+    {
+        printf("BLE disconnected. Reason: %d\n",
+            event->disconnect.reason);
+
+        currentScanner->startScan();
+    }
+
+
     return 0;
 }
 
@@ -120,5 +144,19 @@ void BleManager::initalizeScanner()
 
 void BleManager::SendTimeCorrectionNow(ble_addr_t targetAddress)
 {
-    
+    int rc = ble_gap_disc_cancel();
+
+    if (rc != 0)
+    {
+        printf("BLE scan cancel failed: %d\n", rc);
+        return;
+    }
+
+    rc = ble_gap_connect(BLE_OWN_ADDR_PUBLIC,&targetAddress,10000,nullptr,onBleEvent,nullptr);
+
+    if (rc != 0)
+    {
+        printf("BLE connection initiation failed: %d\n", rc);
+        currentScanner->startScan();
+    }
 }

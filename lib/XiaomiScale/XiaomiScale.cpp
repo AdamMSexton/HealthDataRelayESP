@@ -104,6 +104,7 @@ void XiaomiScale::ProcessAdvertisement(const BleAdvertisement& advertisement)
                 clockCorrectionCountdown--;
                 if (clockCorrectionCountdown == 0)
                 {
+                    printf("Clock correction triggered.");
                     bleManager.SendTimeCorrectionNow(correctionAddress);
                     correctionAddress = {};
                 }

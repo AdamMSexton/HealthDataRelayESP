@@ -17,7 +17,7 @@
 #include "TimeManager.h"
 
 // Create BT Manager object
-BleManager scanner;
+BleManager bleManager;
 // Create WiFi controller
 WiFiManager wifiManager;
 // Create Message center
@@ -53,7 +53,7 @@ extern "C" int app_main()
     scaleServiceUuid.value[1] = 0x18;
 
     // Register scale with scanner
-    if (scanner.subscribe(scaleServiceUuid, &scale))
+    if (bleManager.subscribe(scaleServiceUuid, &scale))
     {
         printf("Scanner registered\n");
     }
@@ -64,7 +64,7 @@ extern "C" int app_main()
     }
    
     // Initalize scanner
-    scanner.initalizeScanner();
+    bleManager.initalizeScanner();
 
     return(0);
 }
