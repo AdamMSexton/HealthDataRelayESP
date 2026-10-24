@@ -66,6 +66,10 @@ bool TimeManager::Init()
     sntpConfig.renew_servers_after_new_IP = true;
     sntpConfig.index_of_first_server = 1;
 
+    // Explicitly set time zone to UTC
+    setenv("TZ", "UTC0", 1);
+    tzset();
+
     // Register SNTP callback
     sntpConfig.sync_cb = &TimeManager::SyncCallback;
 

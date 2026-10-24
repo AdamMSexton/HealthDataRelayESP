@@ -46,38 +46,20 @@ uint8_t XiaomiScale::lastMeasurementTimeStamp[7] = {};
 // Outbound weight processor
 OutboundWeightProcessor outboundWeightProcessor;
 
+uint64_t XiaomiScale::nextClockSyncAllowed = 0;     // Uses systems monolithic/uptime clock as opposed to clock clock
+
 void XiaomiScale::ProcessAdvertisement(const BleAdvertisement& advertisement)
 {
-    // Check advertisement payuload service data for flags indicating a new measurement
+    // Check advertisement payload service data for flags indicating a new measurement
     if ((advertisement.serviceData[2] == 0x02) && ((advertisement.serviceData[3] == 0xA4)||(advertisement.serviceData[3] == 0xA6)))
     {
         // Check timestamp for new
         if (memcmp(lastMeasurementTimeStamp, &advertisement.serviceData[3],7) != 0)
         {
             memcpy(lastMeasurementTimeStamp, &advertisement.serviceData[3],7);
-
-            // printf("**NEW**");
-        
-            // printf("BLE | MAC %02X:%02X:%02X:%02X:%02X:%02X | RSSI %d | UUID 0x%02X%02X | Data[%u]: ",
-            //     advertisement.address[5],
-            //     advertisement.address[4],
-            //     advertisement.address[3],
-            //     advertisement.address[2],
-            //     advertisement.address[1],
-            //     advertisement.address[0],
-            //     advertisement.rssi,
-            //     advertisement.serviceUuid.value[1],
-            //     advertisement.serviceUuid.value[0],
-            //     advertisement.serviceDataLength);
                 
             if (advertisement.serviceData != nullptr)
             {
-                // for (uint16_t i = 0; i < advertisement.serviceDataLength; i++)
-                // {
-                //     printf("%02X ", advertisement.serviceData[i]);
-                // }
-                // printf("\n");
-
                 // Create WeightMeasurement
                 WeightMeasurement measurement;
                 // Weight is bytes 11 & 12, little endian divided by 200
@@ -96,15 +78,16 @@ void XiaomiScale::ProcessAdvertisement(const BleAdvertisement& advertisement)
                 }
                 
                 // Decode time stamp.  UTC assumed
-                struct tm timestamp = {};
-                timestamp.tm_year = (advertisement.serviceData[4] | (advertisement.serviceData[5] << 8)) - 1900;
-                timestamp.tm_mon  = advertisement.serviceData[6] - 1;
-                timestamp.tm_mday = advertisement.serviceData[7];
-                timestamp.tm_hour = advertisement.serviceData[8];
-                timestamp.tm_min  = advertisement.serviceData[9];
-                timestamp.tm_sec  = advertisement.serviceData[10];
-                measurement.measurementTimeUTC = static_cast<uint64_t>(mktime(&timestamp));
-                
+                if (advertisement.serviceDataLength >= 11)
+                {
+                    measurement.measurementTimeUTC = DecodeTimestampUTC(advertisement.serviceData);
+                }
+                else
+                {
+                    // Figure something out later
+                    printf("Malformed Time Advertisement packet. Do something");
+                }
+               
                 outboundWeightProcessor.SendOutboundMessage(measurement);
             }
             else
@@ -117,4 +100,59 @@ void XiaomiScale::ProcessAdvertisement(const BleAdvertisement& advertisement)
             //printf("D");
         }
     }
+    else if ((advertisement.serviceData[2] == 0x02) && (advertisement.serviceData[3] == 0x04))
+    {
+        constexpr int8_t MAX_CLOCK_DRIFT_SECONDS = 5;
+
+
+        uint64_t currentUpTime = esp_timer_get_time();
+        if (currentUpTime >= nextClockSyncAllowed)
+        {
+            int64_t scaleTime = 0;
+            if (advertisement.serviceDataLength >= 11)
+            {
+                scaleTime = DecodeTimestampUTC(advertisement.serviceData);
+            }
+            else
+            {
+                // Figure something out later
+                printf("Malformed Time Advertisement packet. Do something");
+            }
+
+            int64_t scaleDrift = abs(static_cast<int64_t>(time(nullptr)) - scaleTime);
+
+
+            if (scaleDrift > MAX_CLOCK_DRIFT_SECONDS)
+            {
+                if (timeManager.IsTimeSynchronized())
+                {
+                    // Send update to scale
+                    printf("Scale off by %lld seconds", scaleDrift);
+                }
+                else
+                {
+                    printf("Can not adjust scale, ESP time not synchronized.");
+                }
+            }
+
+            // Reset check for another 24 hours from now
+            nextClockSyncAllowed = (currentUpTime + (24ULL * 60 * 60 * 1000000));
+        }
+    }
+}
+
+uint64_t XiaomiScale::DecodeTimestampUTC(const uint8_t* serviceData)
+{
+    struct tm timestamp = {};
+
+    timestamp.tm_year = (serviceData[4] | (serviceData[5] << 8)) - 1900;
+    timestamp.tm_mon  = serviceData[6] - 1;
+    timestamp.tm_mday = serviceData[7];
+    timestamp.tm_hour = serviceData[8];
+    timestamp.tm_min  = serviceData[9];
+    timestamp.tm_sec  = serviceData[10];
+
+    timestamp.tm_isdst = 0;
+
+    return static_cast<uint64_t>(mktime(&timestamp));
 }
