@@ -47,6 +47,8 @@ uint8_t XiaomiScale::lastMeasurementTimeStamp[7] = {};
 OutboundWeightProcessor outboundWeightProcessor;
 
 uint64_t XiaomiScale::nextClockSyncAllowed = 0;     // Uses systems monolithic/uptime clock as opposed to clock clock
+uint8_t XiaomiScale::clockCorrectionCountdown = 0;  // Repeat message counter to ensure clock correction triggered after the new measurement is received
+ble_addr_t XiaomiScale::correctionAddress = {};
 
 void XiaomiScale::ProcessAdvertisement(const BleAdvertisement& advertisement)
 {
@@ -97,13 +99,20 @@ void XiaomiScale::ProcessAdvertisement(const BleAdvertisement& advertisement)
         }
         else
         {
-            //printf("D");
+            if (clockCorrectionCountdown > 0)
+            {
+                clockCorrectionCountdown--;
+                if (clockCorrectionCountdown == 0)
+                {
+                    bleManager.SendTimeCorrectionNow(correctionAddress);
+                    correctionAddress = {};
+                }
+            }
         }
     }
-    else if ((advertisement.serviceData[2] == 0x02) && (advertisement.serviceData[3] == 0x04))
+    else if ((advertisement.serviceData[2] == 0x02) && (advertisement.serviceData[3] == 0x04))  // Clock currently weighing so we know this is a current time stamp from scale
     {
         constexpr int8_t MAX_CLOCK_DRIFT_SECONDS = 5;
-
 
         uint64_t currentUpTime = esp_timer_get_time();
         if (currentUpTime >= nextClockSyncAllowed)
@@ -120,7 +129,7 @@ void XiaomiScale::ProcessAdvertisement(const BleAdvertisement& advertisement)
             }
 
             int64_t scaleDrift = abs(static_cast<int64_t>(time(nullptr)) - scaleTime);
-
+            int64_t recheckOffset = 0;      // Used to adjust nextCLockSync to verify a sync
 
             if (scaleDrift > MAX_CLOCK_DRIFT_SECONDS)
             {
@@ -128,6 +137,12 @@ void XiaomiScale::ProcessAdvertisement(const BleAdvertisement& advertisement)
                 {
                     // Send update to scale
                     printf("Scale off by %lld seconds", scaleDrift);
+                    // Store Bt address for clock correction
+                    correctionAddress.type = advertisement.addressType;
+                    memcpy(correctionAddress.val, advertisement.address, 6);
+                    // Setup clock correction to fire after a 3rd repeated completed measurement so we dont interrupt Ble Communications
+                    clockCorrectionCountdown = 3;
+                    recheckOffset = 23LL * 60 * 60 * 1000000;       // Set Next check offset to subtract 23hours thus recheck in an hour
                 }
                 else
                 {
@@ -136,7 +151,7 @@ void XiaomiScale::ProcessAdvertisement(const BleAdvertisement& advertisement)
             }
 
             // Reset check for another 24 hours from now
-            nextClockSyncAllowed = (currentUpTime + (24ULL * 60 * 60 * 1000000));
+            nextClockSyncAllowed = (currentUpTime + (24ULL * 60 * 60 * 1000000)) - recheckOffset;
         }
     }
 }

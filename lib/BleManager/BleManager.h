@@ -23,6 +23,7 @@ class BleManager
     public:
         void initalizeScanner();
         bool subscribe(const BleUuid& serviceUuid, BleAdvertisementHandler* handler);
+        void SendTimeCorrectionNow(ble_addr_t targetAddress);
         
     private:
         static BleManager* currentScanner;

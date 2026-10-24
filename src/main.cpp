@@ -16,7 +16,7 @@
 #include "WiFiManager.h"
 #include "TimeManager.h"
 
-// Create BT Scanner object
+// Create BT Manager object
 BleManager scanner;
 // Create WiFi controller
 WiFiManager wifiManager;

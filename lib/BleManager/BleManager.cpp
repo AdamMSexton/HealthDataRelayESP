@@ -117,3 +117,8 @@ void BleManager::initalizeScanner()
 
     nimble_port_freertos_init(nimbleTask);
 }
+
+void BleManager::SendTimeCorrectionNow(ble_addr_t targetAddress)
+{
+    
+}

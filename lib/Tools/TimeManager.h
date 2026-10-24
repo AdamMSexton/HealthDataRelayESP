@@ -9,7 +9,7 @@
 #include "esp_netif_sntp.h"
 #include "esp_timer.h"
 
-   
+
 class TimeManager
 {
     public:
