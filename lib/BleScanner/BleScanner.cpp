@@ -51,6 +51,8 @@ int BleScanner::onBleEvent(struct ble_gap_event* event, void* arg)
                         newAdvertisement.address[j] = event->disc.addr.val[j];
                     }
 
+                    newAdvertisement.addressType = event->disc.addr.type;
+
                     if (fields.svc_data_uuid16 != nullptr && fields.svc_data_uuid16_len >= 2)
                     {
                         newAdvertisement.serviceData =

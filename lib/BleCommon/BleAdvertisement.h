@@ -5,6 +5,7 @@
 struct BleAdvertisement
 {
     uint8_t address[6];
+    uint8_t addressType;
     int8_t rssi;
 
     BleUuid serviceUuid;
