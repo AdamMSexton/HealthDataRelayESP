@@ -25,7 +25,7 @@ bool BleManager::subscribe(const BleUuid& serviceUuid, BleAdvertisementHandler* 
   return true;
 }
 
-int BleManager::onBleEvent(struct ble_gap_event* event, void* arg)
+int BleManager::onGapEvent(struct ble_gap_event* event, void* arg)
 {
     switch(event->type)
     {
@@ -44,6 +44,31 @@ int BleManager::onBleEvent(struct ble_gap_event* event, void* arg)
     return 0;
 }
 
+int BleManager::onGattServiceDiscovered(uint16_t conn_handle, const ble_gatt_error* error, const ble_gatt_svc* service, void* arg)
+{
+    if (error->status == 0)
+    {
+        printf("GATT service found: start=%u, end=%u\n",
+               service->start_handle, service->end_handle);
+    }
+    else if (error->status == BLE_HS_EDONE)
+    {
+        printf("GATT service discovery complete.\n");
+
+
+        int rc = ble_gap_terminate(conn_handle, BLE_ERR_REM_USER_CONN_TERM);
+        printf("BLE terminate requested. rc=%d\n", rc);
+    }
+    else
+    {
+        printf("GATT service discovery failed: %d\n", error->status);
+    }
+
+    return 0;    
+}
+
+
+
 void BleManager::startScan()
 {
     struct ble_gap_disc_params params = {};
@@ -57,7 +82,7 @@ void BleManager::startScan()
         BLE_OWN_ADDR_PUBLIC,
         BLE_HS_FOREVER,
         &params,
-        onBleEvent,
+        onGapEvent,
         nullptr);
 
     printf("BLE scan started. rc=%d\n", rc);
@@ -102,7 +127,7 @@ void BleManager::SendTimeCorrectionNow(ble_addr_t targetAddress)
         return;
     }
 
-    rc = ble_gap_connect(BLE_OWN_ADDR_PUBLIC,&targetAddress,10000,nullptr,onBleEvent,nullptr);
+    rc = ble_gap_connect(BLE_OWN_ADDR_PUBLIC,&targetAddress,10000,nullptr,onGapEvent,nullptr);
 
     if (rc != 0)
     {
@@ -110,6 +135,7 @@ void BleManager::SendTimeCorrectionNow(ble_addr_t targetAddress)
         currentScanner->startScan();
     }
 }
+
 
 
 int BleManager::process_BLE_GAP_EVENT_DISC(ble_gap_event* event)
@@ -160,8 +186,20 @@ int BleManager::process_BLE_GAP_EVENT_CONNECT(ble_gap_event* event)
     {
         printf("BLE connected successfully. Handle: %d\n",event->connect.conn_handle);
 
-        // For testing, immediately disconnect.
-        ble_gap_terminate(event->connect.conn_handle,BLE_ERR_REM_USER_CONN_TERM);
+        ble_uuid16_t serviceUuid = BLE_UUID16_INIT(0x1805);
+
+        int rc = ble_gattc_disc_svc_by_uuid(event->connect.conn_handle,&serviceUuid.u,onGattServiceDiscovered,nullptr);
+
+        if (rc != 0)
+        {
+            printf("Failed to start GATT service discovery: %d\n", rc);
+            ble_gap_terminate(event->connect.conn_handle, BLE_ERR_REM_USER_CONN_TERM);
+        }
+    }
+    else if (event->connect.status == BLE_HS_EDONE)
+    {
+        printf("GATT service discovery complete.\n");
+        ble_gap_terminate(event->connect.conn_handle, BLE_ERR_REM_USER_CONN_TERM);
     }
     else
     {
@@ -174,8 +212,7 @@ int BleManager::process_BLE_GAP_EVENT_CONNECT(ble_gap_event* event)
 
 int BleManager::process_BLE_GAP_EVENT_DISCONNECT(ble_gap_event* event)
 {
-    printf("BLE disconnected. Reason: %d\n",
-        event->disconnect.reason);
+    printf("BLE disconnected. Reason: %d\n", event->disconnect.reason);
 
     currentScanner->startScan();
 

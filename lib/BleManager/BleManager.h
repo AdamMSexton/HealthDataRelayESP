@@ -27,7 +27,12 @@ class BleManager
         
     private:
         static BleManager* currentScanner;
-        static int onBleEvent(struct ble_gap_event* event, void* arg);
+
+        static int onGapEvent(struct ble_gap_event* event, void* arg);
+        static int onGattServiceDiscovered(uint16_t conn_handle, const ble_gatt_error* error, const ble_gatt_svc* service, void* arg);
+        static int onGattCharacteristicDiscovered();
+        static int onGattWriteComplete();
+
         void startScan();
         static void onSync();
         static void nimbleTask(void* param);
