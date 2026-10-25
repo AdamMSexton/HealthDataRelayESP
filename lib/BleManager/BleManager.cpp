@@ -27,70 +27,20 @@ bool BleManager::subscribe(const BleUuid& serviceUuid, BleAdvertisementHandler* 
 
 int BleManager::onBleEvent(struct ble_gap_event* event, void* arg)
 {
-    if (event->type == BLE_GAP_EVENT_DISC)
+    switch(event->type)
     {
-        //const uint8_t* a = event->disc.addr.val;
-        struct ble_hs_adv_fields fields;
-        ble_hs_adv_parse_fields(&fields,event->disc.data,event->disc.length_data);
-
-        if ((fields.svc_data_uuid16 != nullptr) && (fields.svc_data_uuid16_len >= 2))
-        {
-            uint16_t uuid = fields.svc_data_uuid16[0] | (fields.svc_data_uuid16[1] << 8);
-            BleUuid thisUuid(uuid);
-            
-            for (int j = 0; j < subscriptionCount; j++)
-            {
-                if (thisUuid == subscriptions[j].serviceUuid)
-                {
-                    // Create advertisement
-                    BleAdvertisement newAdvertisement;
-                    newAdvertisement.serviceUuid = thisUuid;
-                    newAdvertisement.rssi = event->disc.rssi;
-                    for (int j = 0; j < 6; j++)
-                    {
-                        newAdvertisement.address[j] = event->disc.addr.val[j];
-                    }
-
-                    newAdvertisement.addressType = event->disc.addr.type;
-
-                    if (fields.svc_data_uuid16 != nullptr && fields.svc_data_uuid16_len >= 2)
-                    {
-                        newAdvertisement.serviceData =
-                            fields.svc_data_uuid16;
-
-                        newAdvertisement.serviceDataLength =
-                            fields.svc_data_uuid16_len;
-                    }
-
-                    subscriptions[j].handler->ProcessAdvertisement(newAdvertisement);
-                }
-            }
-        }
-    }
-    else if (event->type == BLE_GAP_EVENT_CONNECT)
-    {
-        if (event->connect.status == 0)
-        {
-            printf("BLE connected successfully. Handle: %d\n",event->connect.conn_handle);
-
-            // For testing, immediately disconnect.
-            ble_gap_terminate(event->connect.conn_handle,BLE_ERR_REM_USER_CONN_TERM);
-        }
-        else
-        {
-            printf("BLE connection failed. Status: %d\n",event->connect.status);
-            currentScanner->startScan();
-        }
-    }
-    else if (event->type == BLE_GAP_EVENT_DISCONNECT)
-    {
-        printf("BLE disconnected. Reason: %d\n",
-            event->disconnect.reason);
-
-        currentScanner->startScan();
-    }
-
-
+        case BLE_GAP_EVENT_DISC:
+            process_BLE_GAP_EVENT_DISC(event);
+            break;
+        case BLE_GAP_EVENT_CONNECT:
+            process_BLE_GAP_EVENT_CONNECT(event);
+            break;
+        case BLE_GAP_EVENT_DISCONNECT:
+            process_BLE_GAP_EVENT_DISCONNECT(event);
+            break;
+        default:
+            break;
+    }    
     return 0;
 }
 
@@ -159,4 +109,75 @@ void BleManager::SendTimeCorrectionNow(ble_addr_t targetAddress)
         printf("BLE connection initiation failed: %d\n", rc);
         currentScanner->startScan();
     }
+}
+
+
+int BleManager::process_BLE_GAP_EVENT_DISC(ble_gap_event* event)
+{
+    struct ble_hs_adv_fields fields;
+    ble_hs_adv_parse_fields(&fields,event->disc.data,event->disc.length_data);
+    
+    if ((fields.svc_data_uuid16 != nullptr) && (fields.svc_data_uuid16_len >= 2))
+    {
+        uint16_t uuid = fields.svc_data_uuid16[0] | (fields.svc_data_uuid16[1] << 8);
+        BleUuid thisUuid(uuid);
+        
+        for (int j = 0; j < subscriptionCount; j++)
+        {
+            if (thisUuid == subscriptions[j].serviceUuid)
+            {
+                // Create advertisement
+                BleAdvertisement newAdvertisement;
+                newAdvertisement.serviceUuid = thisUuid;
+                newAdvertisement.rssi = event->disc.rssi;
+                for (int j = 0; j < 6; j++)
+                {
+                    newAdvertisement.address[j] = event->disc.addr.val[j];
+                }
+                
+                newAdvertisement.addressType = event->disc.addr.type;
+                
+                if (fields.svc_data_uuid16 != nullptr && fields.svc_data_uuid16_len >= 2)
+                {
+                    newAdvertisement.serviceData =
+                    fields.svc_data_uuid16;
+                    
+                    newAdvertisement.serviceDataLength =
+                    fields.svc_data_uuid16_len;
+                }
+                
+                subscriptions[j].handler->ProcessAdvertisement(newAdvertisement);
+            }
+        }
+    }
+    
+    return 0;
+}
+
+int BleManager::process_BLE_GAP_EVENT_CONNECT(ble_gap_event* event)
+{
+    if (event->connect.status == 0)
+    {
+        printf("BLE connected successfully. Handle: %d\n",event->connect.conn_handle);
+
+        // For testing, immediately disconnect.
+        ble_gap_terminate(event->connect.conn_handle,BLE_ERR_REM_USER_CONN_TERM);
+    }
+    else
+    {
+        printf("BLE connection failed. Status: %d\n",event->connect.status);
+        currentScanner->startScan();
+    }
+    
+    return 0;
+}
+
+int BleManager::process_BLE_GAP_EVENT_DISCONNECT(ble_gap_event* event)
+{
+    printf("BLE disconnected. Reason: %d\n",
+        event->disconnect.reason);
+
+    currentScanner->startScan();
+
+    return 0;
 }

@@ -31,4 +31,8 @@ class BleManager
         void startScan();
         static void onSync();
         static void nimbleTask(void* param);
+
+        static int process_BLE_GAP_EVENT_DISC(ble_gap_event* event);
+        static int process_BLE_GAP_EVENT_CONNECT(ble_gap_event* event);
+        static int process_BLE_GAP_EVENT_DISCONNECT(ble_gap_event* event);
 };
