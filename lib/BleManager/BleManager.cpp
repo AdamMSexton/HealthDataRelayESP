@@ -186,7 +186,7 @@ int BleManager::process_BLE_GAP_EVENT_CONNECT(ble_gap_event* event)
     {
         printf("BLE connected successfully. Handle: %d\n",event->connect.conn_handle);
 
-        ble_uuid16_t serviceUuid = BLE_UUID16_INIT(0x1805);
+        ble_uuid16_t serviceUuid = BLE_UUID16_INIT(0x181B);
 
         int rc = ble_gattc_disc_svc_by_uuid(event->connect.conn_handle,&serviceUuid.u,onGattServiceDiscovered,nullptr);
 
